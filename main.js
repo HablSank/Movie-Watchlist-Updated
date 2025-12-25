@@ -45,6 +45,9 @@ const filePreviewContainer = document.getElementById('file-preview-container');
 const filePreviewImage = document.getElementById('file-preview-image');
 const fileNameText = document.getElementById('file-name-text');
 
+// Toast Container
+const toastContainer = document.getElementById('toast-container');
+
 // Watchlist
 const movieForm = document.getElementById("movie-watchlist");
 const movieListContainer = document.getElementById("movie-list-container");
@@ -108,10 +111,12 @@ formLogin.addEventListener('submit', async (e) => {
     setLoading(false);
 
     if (error) {
-        authMessage.textContent = `Login Error: ${error.message}`;
+        showToast(error.message, 'error');
+        authMessage.textContent = `Login Error: ${error.message}`; // Keep text too for clarity on auth screen
         authMessage.style.color = '#dc3545';
     } else {
         authMessage.textContent = '';
+        showToast('Login successful!', 'success');
     }
 });
 
@@ -126,9 +131,11 @@ formRegister.addEventListener('submit', async (e) => {
     setLoading(false);
 
     if (error) {
+        showToast(error.message, 'error');
         authMessage.textContent = `Register Error: ${error.message}`;
         authMessage.style.color = '#dc3545';
     } else {
+        showToast('Registration successful! Please login.', 'success');
         authMessage.textContent = 'Registration successful! Please check your email (if confirmation enabled) or login.';
         authMessage.style.color = '#28a745';
         // Auto switch to login tab
@@ -141,6 +148,7 @@ btnLogout.addEventListener('click', async () => {
     setLoading(true);
     await supabase.auth.signOut();
     setLoading(false);
+    showToast('Logged out successfully', 'success');
 });
 
 // --- Modal Functions ---
@@ -194,6 +202,28 @@ function resetFileInput() {
 
 // --- App Functions ---
 
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    // Icon based on type
+    const icon = type === 'success'
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+
+    toast.innerHTML = `${icon}<span>${message}</span>`;
+
+    toastContainer.appendChild(toast);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+        });
+    }, 3000);
+}
+
 function setLoading(isLoading) {
     if (isLoading) {
         loadingOverlay.classList.remove('hidden');
@@ -218,6 +248,7 @@ async function fetchMovies() {
 
     if (error) {
         console.error('Error fetching movies:', error);
+        showToast('Failed to load movies', 'error');
         return;
     }
 
@@ -366,11 +397,14 @@ async function toggleWatched(id, currentStatus) {
 
     if (error) {
         console.error('Error toggling watched status:', error);
+        showToast('Failed to update status', 'error');
     } else {
         // Update local state to avoid full refetch
         const movie = allMovies.find(m => m.id === id);
         if (movie) movie.is_watched = !currentStatus;
         renderMovies();
+        const msg = !currentStatus ? 'Marked as Watched' : 'Marked as Unwatched';
+        showToast(msg, 'success');
     }
 }
 
@@ -384,10 +418,12 @@ async function deleteMovie(id, title) {
 
         if (error) {
             console.error('Error deleting movie:', error);
+            showToast('Failed to delete movie', 'error');
         } else {
              // Update local state
             allMovies = allMovies.filter(m => m.id !== id);
             renderMovies();
+            showToast('Movie deleted', 'success');
         }
     }
 }
@@ -396,7 +432,7 @@ movieForm.addEventListener("submit", async function(event) {
     event.preventDefault();
 
     if (!currentUser) {
-        alert("You must be logged in to add movies.");
+        showToast("You must be logged in to add movies.", 'error');
         return;
     }
 
@@ -455,6 +491,7 @@ movieForm.addEventListener("submit", async function(event) {
         movieForm.reset();
         resetFileInput(); // Reset preview
         addMovieModal.close();
+        showToast('Movie added successfully!', 'success');
 
         // Add new movie to local list
         if (data && data.length > 0) {
@@ -466,7 +503,7 @@ movieForm.addEventListener("submit", async function(event) {
 
     } catch (error) {
         console.error('Error adding movie:', error);
-        alert(`Error: ${error.message}`);
+        showToast(error.message, 'error');
     } finally {
         // Reset Button
         submitBtn.disabled = false;
