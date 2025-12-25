@@ -7,8 +7,55 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Movie Watchlist</h1>
+
+    <!-- Loading Screen / Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="container">
+        <h1>Welcome to Movie Watchlist</h1>
+        <div class="auth-box">
+            <div class="tabs">
+                <button id="tab-login" class="active">Login</button>
+                <button id="tab-register">Register</button>
+            </div>
+
+            <form id="form-login">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" required placeholder="you@example.com">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" required placeholder="********">
+                <input type="submit" value="Login">
+            </form>
+
+            <form id="form-register" class="hidden">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" required placeholder="you@example.com">
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" required placeholder="********">
+                <input type="submit" value="Register">
+            </form>
+            <p id="auth-message"></p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="container hidden">
+        <nav class="navbar">
+            <h1>Movie Watchlist</h1>
+            <button id="btn-logout" class="btn-logout">Logout</button>
+        </nav>
+
+        <div class="controls">
+            <input type="text" id="search-movie" placeholder="Search movies...">
+            <select id="sort-movie">
+                <option value="recent">Recently Added</option>
+                <option value="rating_desc">Highest Rating</option>
+                <option value="year_desc">Newest Year</option>
+            </select>
+        </div>
 
         <main class="watchlist-body">
 
@@ -19,7 +66,7 @@
                     <label for="movie-year">Tahun Rilis :</label>
                     <input type="number" id="movie-year" min="1" max="9999" required>
                     <label for="movie-rating">Rating (1-10) :</label>
-                    <input type="number" id="movie-rating" min="1" max="10" required>
+                    <input type="number" id="movie-rating" min="0" max="10" step="0.1" required>
                     <label for="movie-poster">Poster Film (URL) :</label>
                     <input type="url" id="movie-poster" placeholder="https://...">
                     <input type="submit" value="Tambahkan Film">
@@ -28,6 +75,7 @@
 
             <div class="list-container">
                 <h2 class="judul-container" id="judul-container">Daftar Film</h2>
+                <div id="loading-indicator" class="hidden">Loading...</div>
                 <div id="movie-list-container"></div>
             </div>
 
