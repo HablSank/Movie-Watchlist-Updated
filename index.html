@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Watchlist</title>
-    <link rel="stylesheet" href="watchlist.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -34,72 +34,6 @@
         </main>
     </div>
 
-    <script>
-        const movieForm = document.getElementById("movie-watchlist");
-        const movieListContainer = document.getElementById("movie-list-container");
-        const judulContainer = document.getElementById("judul-container"); 
-
-        function checkEmptyState() {
-            if (movieListContainer.children.length === 0) {
-                judulContainer.textContent = "Daftar Film Kosong 🍿";
-            } else {
-                judulContainer.textContent = "Daftar Film";
-            }
-        };
-        checkEmptyState();
-
-        movieForm.addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            const title = document.getElementById("movie-title").value;
-            const year = document.getElementById("movie-year").value;
-            const rating = document.getElementById("movie-rating").value;
-            let poster = document.getElementById("movie-poster").value;
-
-            if (poster.trim() === "") {
-                poster = 'https://placehold.co/100x150?text=No+Image';
-            }
-
-            const movieCard = document.createElement("div");
-            movieCard.classList.add("movie-card");
-
-            movieCard.innerHTML = `
-                <div class="movie-card-content">
-                    <img src="${poster}" alt="Poster Film ${title}">
-                    <div class="movie-details">
-                        <h3>${title}</h3>
-                        <p>Tahun: ${year}</p>
-                        <p>Rating: ${rating} / 10</p>
-                    </div>
-                </div>
-            `;
-
-            const buttonContainer = document.createElement("div");
-            buttonContainer.classList.add("card-buttons")
-            const btnWatched = document.createElement("button");
-            btnWatched.textContent = "Sudah Ditonton";
-            btnWatched.classList.add("btnWatched");
-            btnWatched.addEventListener("click", function() {
-            movieCard.classList.toggle("watched");
-            });
-            const btnDelete = document.createElement("button");
-            btnDelete.textContent = "Hapus";
-            btnDelete.classList.add("btnDelete");
-            btnDelete.addEventListener("click", function() {
-                if (confirm(`Yakin ingin menghapus film "${title}"?`)){
-                movieCard.remove();
-                checkEmptyState();
-                }
-            });
-            buttonContainer.appendChild(btnWatched);
-            buttonContainer.appendChild(btnDelete);
-
-            movieCard.appendChild(buttonContainer)
-
-            movieListContainer.appendChild(movieCard);
-            movieForm.reset();
-            checkEmptyState();
-        });
-    </script>
+    <script type="module" src="/main.js"></script>
 </body>
 </html>
