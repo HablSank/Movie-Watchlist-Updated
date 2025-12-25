@@ -186,7 +186,8 @@ a {
     color: var(--text-secondary);
 }
 
-.input-group input {
+.input-group input,
+.input-group .file-input {
     background: rgba(0,0,0,0.2);
     border: 1px solid var(--border-color);
     color: white;
@@ -194,12 +195,19 @@ a {
     border-radius: var(--radius-md);
     font-size: 1rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
 }
 
-.input-group input:focus {
+.input-group input:focus,
+.input-group .file-input:focus {
     outline: none;
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.file-input {
+    cursor: pointer;
+    background-color: var(--surface-color);
 }
 
 #auth-message {

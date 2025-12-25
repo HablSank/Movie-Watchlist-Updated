@@ -364,37 +364,73 @@ movieForm.addEventListener("submit", async function(event) {
     const title = document.getElementById("movie-title").value;
     const year = document.getElementById("movie-year").value;
     const rating = parseFloat(document.getElementById("movie-rating").value); // Parse float
-    let poster = document.getElementById("movie-poster").value;
+    const posterFile = document.getElementById("movie-poster-file").files[0];
+    const submitBtn = document.getElementById("btn-submit-movie");
 
-    if (poster.trim() === "") {
-        poster = null;
-    }
+    let posterUrl = null;
 
-    // INSERT: Include user_id
-    const { data, error } = await supabase
-        .from('movies')
-        .insert([{
-            title,
-            year,
-            rating,
-            poster_url: poster,
-            user_id: currentUser.id
-        }])
-        .select();
+    // Loading State
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Uploading...";
 
-    if (error) {
-        console.error('Error adding movie:', error);
-    } else {
+    try {
+        // Upload Image if selected
+        if (posterFile) {
+            const fileExt = posterFile.name.split('.').pop();
+            const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
+
+            // Step A: Upload
+            const { error: uploadError } = await supabase.storage
+                .from('posters')
+                .upload(fileName, posterFile);
+
+            if (uploadError) {
+                throw new Error(`Upload failed: ${uploadError.message}`);
+            }
+
+            // Step B: Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('posters')
+                .getPublicUrl(fileName);
+
+            posterUrl = publicUrl;
+        }
+
+        // INSERT: Include user_id & uploaded poster_url
+        const { data, error } = await supabase
+            .from('movies')
+            .insert([{
+                title,
+                year,
+                rating,
+                poster_url: posterUrl,
+                user_id: currentUser.id
+            }])
+            .select();
+
+        if (error) {
+            throw error;
+        }
+
+        // Success
         movieForm.reset();
-        addMovieModal.close(); // NEW: Close modal on success
+        addMovieModal.close();
+
         // Add new movie to local list
         if (data && data.length > 0) {
             allMovies.unshift(data[0]);
             renderMovies();
         } else {
-            // Fallback if data not returned
             fetchMovies();
         }
+
+    } catch (error) {
+        console.error('Error adding movie:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        // Reset Button
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Add to Collection";
     }
 });
 
