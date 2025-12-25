@@ -4,102 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Watchlist</title>
-    <link rel="stylesheet" href="watchlist.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Movie Watchlist</h1>
 
-        <main class="watchlist-body">
+    <!-- Loading Screen / Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+    </div>
 
-            <div class="form-container">
-                <form id="movie-watchlist" action="">
-                    <label for="movie-title">Judul Film :</label>
-                    <input type="text" id="movie-title" required>
-                    <label for="movie-year">Tahun Rilis :</label>
-                    <input type="number" id="movie-year" min="1" max="9999" required>
-                    <label for="movie-rating">Rating (1-10) :</label>
-                    <input type="number" id="movie-rating" min="1" max="10" required>
-                    <label for="movie-poster">Poster Film (URL) :</label>
-                    <input type="url" id="movie-poster" placeholder="https://...">
-                    <input type="submit" value="Tambahkan Film">
-                </form>
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-wrapper">
+        <div class="auth-card glass-panel">
+            <h1 class="brand-title">CineList</h1>
+            <p class="auth-subtitle">Your personal movie journey starts here.</p>
+
+            <div class="tabs">
+                <button id="tab-login" class="active">Login</button>
+                <button id="tab-register">Register</button>
             </div>
 
-            <div class="list-container">
-                <h2 class="judul-container" id="judul-container">Daftar Film</h2>
-                <div id="movie-list-container"></div>
-            </div>
+            <form id="form-login" class="auth-form">
+                <div class="input-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="name@example.com">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
 
+            <form id="form-register" class="auth-form hidden">
+                <div class="input-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required placeholder="name@example.com">
+                </div>
+                <div class="input-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+            <p id="auth-message"></p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="app-wrapper hidden">
+
+        <!-- Navbar -->
+        <nav class="navbar glass-panel">
+            <div class="nav-left">
+                <h1 class="brand-logo">CineList</h1>
+            </div>
+            <div class="nav-right">
+                <span id="user-email" class="user-email">user@example.com</span>
+                <button id="btn-logout" class="btn-outline">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Controls Bar -->
+        <header class="controls-bar">
+            <div class="search-sort-group">
+                <div class="search-wrapper">
+                    <!-- Search Icon SVG -->
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-movie" placeholder="Search your collection...">
+                </div>
+                <div class="sort-wrapper">
+                    <select id="sort-movie">
+                        <option value="recent">Recently Added</option>
+                        <option value="rating_desc">Highest Rating</option>
+                        <option value="year_desc">Newest Year</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btn-add-movie" class="btn-primary btn-add">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Movie
+            </button>
+        </header>
+
+        <!-- Movie Grid -->
+        <main class="watchlist-content">
+            <div id="loading-indicator" class="hidden">Loading movies...</div>
+            <h2 id="judul-container" class="section-title">My List</h2>
+            <div id="movie-list-container" class="movie-grid"></div>
         </main>
     </div>
 
-    <script>
-        const movieForm = document.getElementById("movie-watchlist");
-        const movieListContainer = document.getElementById("movie-list-container");
-        const judulContainer = document.getElementById("judul-container"); 
-
-        function checkEmptyState() {
-            if (movieListContainer.children.length === 0) {
-                judulContainer.textContent = "Daftar Film Kosong 🍿";
-            } else {
-                judulContainer.textContent = "Daftar Film";
-            }
-        };
-        checkEmptyState();
-
-        movieForm.addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            const title = document.getElementById("movie-title").value;
-            const year = document.getElementById("movie-year").value;
-            const rating = document.getElementById("movie-rating").value;
-            let poster = document.getElementById("movie-poster").value;
-
-            if (poster.trim() === "") {
-                poster = 'https://placehold.co/100x150?text=No+Image';
-            }
-
-            const movieCard = document.createElement("div");
-            movieCard.classList.add("movie-card");
-
-            movieCard.innerHTML = `
-                <div class="movie-card-content">
-                    <img src="${poster}" alt="Poster Film ${title}">
-                    <div class="movie-details">
-                        <h3>${title}</h3>
-                        <p>Tahun: ${year}</p>
-                        <p>Rating: ${rating} / 10</p>
-                    </div>
+    <!-- Add Movie Modal -->
+    <dialog id="add-movie-modal" class="modal glass-panel">
+        <div class="modal-header">
+            <h2>Add New Movie</h2>
+            <button id="btn-close-modal" class="btn-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <form id="movie-watchlist" class="modal-form">
+            <div class="input-group">
+                <label for="movie-title">Title</label>
+                <input type="text" id="movie-title" required placeholder="e.g. Inception">
+            </div>
+            <div class="form-row">
+                <div class="input-group">
+                    <label for="movie-year">Year</label>
+                    <input type="number" id="movie-year" min="1888" max="9999" required placeholder="2010">
                 </div>
-            `;
+                <div class="input-group">
+                    <label for="movie-rating">Rating</label>
+                    <input type="number" id="movie-rating" min="0" max="10" step="0.1" required placeholder="8.8">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="movie-poster">Poster URL</label>
+                <input type="url" id="movie-poster" placeholder="https://image.tmdb.org/...">
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary full-width">Add to Collection</button>
+            </div>
+        </form>
+    </dialog>
 
-            const buttonContainer = document.createElement("div");
-            buttonContainer.classList.add("card-buttons")
-            const btnWatched = document.createElement("button");
-            btnWatched.textContent = "Sudah Ditonton";
-            btnWatched.classList.add("btnWatched");
-            btnWatched.addEventListener("click", function() {
-            movieCard.classList.toggle("watched");
-            });
-            const btnDelete = document.createElement("button");
-            btnDelete.textContent = "Hapus";
-            btnDelete.classList.add("btnDelete");
-            btnDelete.addEventListener("click", function() {
-                if (confirm(`Yakin ingin menghapus film "${title}"?`)){
-                movieCard.remove();
-                checkEmptyState();
-                }
-            });
-            buttonContainer.appendChild(btnWatched);
-            buttonContainer.appendChild(btnDelete);
-
-            movieCard.appendChild(buttonContainer)
-
-            movieListContainer.appendChild(movieCard);
-            movieForm.reset();
-            checkEmptyState();
-        });
-    </script>
+    <script type="module" src="/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+
+> movie-watchlist-vite@0.0.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 605 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+8:54:13 AM [vite] page reload index.html
+8:54:56 AM [vite] page reload main.js
+8:55:43 AM [vite] hmr update /style.css?direct
