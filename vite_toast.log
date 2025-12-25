@@ -7,3 +7,6 @@
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+12:49:15 PM [vite] page reload index.html
+12:49:42 PM [vite] hmr update /style.css?direct
+12:50:39 PM [vite] page reload main.js
