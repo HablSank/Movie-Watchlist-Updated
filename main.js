@@ -34,9 +34,26 @@ const dropdownSelected = document.getElementById('dropdown-selected');
 const dropdownContainer = document.getElementById('sort-dropdown');
 let currentSortValue = 'recent'; // Default sort
 
-// Modal
+// Modal - Add Movie
 const addMovieModal = document.getElementById('add-movie-modal'); // NEW
 const btnCloseModal = document.getElementById('btn-close-modal'); // NEW
+
+// Modal - Review
+const reviewModal = document.getElementById('review-modal');
+const btnCloseReview = document.getElementById('btn-close-review');
+const reviewForm = document.getElementById('review-form');
+let currentReviewMovieId = null;
+
+// Modal - Display Review
+const reviewDisplayModal = document.getElementById('review-display-modal');
+const btnCloseDisplay = document.getElementById('btn-close-display');
+
+// Modal - Delete
+const deleteModal = document.getElementById('delete-modal');
+const btnCloseDelete = document.getElementById('btn-close-delete');
+const btnCancelDelete = document.getElementById('btn-cancel-delete');
+const btnConfirmDelete = document.getElementById('btn-confirm-delete');
+let currentDeleteMovieId = null;
 
 // File Upload Elements
 const fileInput = document.getElementById('movie-poster-file');
@@ -152,6 +169,8 @@ btnLogout.addEventListener('click', async () => {
 });
 
 // --- Modal Functions ---
+
+// Add Movie
 btnAddMovie.addEventListener('click', () => {
     addMovieModal.showModal();
 });
@@ -161,9 +180,44 @@ btnCloseModal.addEventListener('click', () => {
 });
 
 addMovieModal.addEventListener('click', (event) => {
-    // Close when clicking outside
-    if (event.target === addMovieModal) {
-        addMovieModal.close();
+    if (event.target === addMovieModal) addMovieModal.close();
+});
+
+// Review Modal
+btnCloseReview.addEventListener('click', () => {
+    reviewModal.close();
+});
+
+reviewModal.addEventListener('click', (event) => {
+    if (event.target === reviewModal) reviewModal.close();
+});
+
+// Display Review Modal
+btnCloseDisplay.addEventListener('click', () => {
+    reviewDisplayModal.close();
+});
+
+reviewDisplayModal.addEventListener('click', (event) => {
+    if (event.target === reviewDisplayModal) reviewDisplayModal.close();
+});
+
+// Delete Modal
+btnCloseDelete.addEventListener('click', () => {
+    deleteModal.close();
+});
+
+btnCancelDelete.addEventListener('click', () => {
+    deleteModal.close();
+});
+
+deleteModal.addEventListener('click', (event) => {
+    if (event.target === deleteModal) deleteModal.close();
+});
+
+btnConfirmDelete.addEventListener('click', () => {
+    if (currentDeleteMovieId) {
+        performDelete(currentDeleteMovieId);
+        deleteModal.close();
     }
 });
 
@@ -269,7 +323,12 @@ function getProcessedMovies() {
     // Sort
     const sortBy = currentSortValue;
     if (sortBy === 'rating_desc') {
-        processed.sort((a, b) => b.rating - a.rating);
+        // Sort nulls to bottom
+        processed.sort((a, b) => {
+            const rA = a.rating || 0;
+            const rB = b.rating || 0;
+            return rB - rA;
+        });
     } else if (sortBy === 'year_desc') {
         processed.sort((a, b) => b.year - a.year);
     } else {
@@ -303,16 +362,29 @@ function renderMovies() {
 
         const posterSrc = movie.poster_url || 'https://placehold.co/300x450/1e1e1e/FFF?text=No+Poster';
 
+        // Show Rating only if watched
+        const ratingBadge = movie.is_watched && movie.rating !== null
+            ? `<span class="rating-badge">⭐ ${movie.rating}</span>`
+            : `<span class="rating-badge" style="opacity: 0.5;">Plan to Watch</span>`;
+
+        // Review Icon if reviewed
+        const reviewIcon = movie.is_watched
+            ? `<button class="action-btn btn-review" title="Read Review">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+               </button>`
+            : '';
+
         // NEW CARD STRUCTURE (Icons Only)
         movieCard.innerHTML = `
             <div class="card-poster" style="background-image: url('${posterSrc}')">
                 <div class="card-overlay">
-                    <button class="action-btn btn-watched ${movie.is_watched ? 'active' : ''}" title="${movie.is_watched ? 'Mark as Unwatched' : 'Mark as Watched'}">
+                    <button class="action-btn btn-watched ${movie.is_watched ? 'active' : ''}" title="${movie.is_watched ? 'Reset Status' : 'Rate & Review'}">
                         ${movie.is_watched
                             ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>'
                             : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
                         }
                     </button>
+                    ${reviewIcon}
                     <button class="action-btn btn-delete" title="Delete Movie">
                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                     </button>
@@ -321,7 +393,7 @@ function renderMovies() {
             <div class="card-info">
                 <div class="info-top">
                     <h3 title="${movie.title}">${movie.title}</h3>
-                    <span class="rating-badge">${movie.rating}</span>
+                    ${ratingBadge}
                 </div>
                 <div class="info-bottom">
                     <span class="year">${movie.year}</span>
@@ -332,15 +404,23 @@ function renderMovies() {
         // Attach listeners
         const btnWatched = movieCard.querySelector('.btn-watched');
         btnWatched.addEventListener("click", (e) => {
-            e.stopPropagation(); // Prevent card click
-            toggleWatched(movie.id, movie.is_watched);
+            e.stopPropagation();
+            handleWatchedClick(movie);
         });
 
         const btnDelete = movieCard.querySelector('.btn-delete');
         btnDelete.addEventListener("click", (e) => {
-            e.stopPropagation(); // Prevent card click
+            e.stopPropagation();
             deleteMovie(movie.id, movie.title);
         });
+
+        const btnReview = movieCard.querySelector('.btn-review');
+        if (btnReview) {
+            btnReview.addEventListener("click", (e) => {
+                e.stopPropagation();
+                showReviewDisplay(movie);
+            });
+        }
 
         movieListContainer.appendChild(movieCard);
     });
@@ -388,46 +468,118 @@ dropdownMenu.addEventListener('click', (e) => {
 });
 
 
-async function toggleWatched(id, currentStatus) {
+// Logic for Review Flow
+function handleWatchedClick(movie) {
+    if (movie.is_watched) {
+        // Already watched: Toggle OFF (Reset)
+        resetMovieStatus(movie.id);
+    } else {
+        // Unwatched: Open Review Modal
+        openReviewModal(movie.id);
+    }
+}
+
+function openReviewModal(id) {
+    currentReviewMovieId = id;
+    document.getElementById('review-rating').value = '';
+    document.getElementById('review-text').value = '';
+    reviewModal.showModal();
+}
+
+async function resetMovieStatus(id) {
     const { error } = await supabase
         .from('movies')
-        .update({ is_watched: !currentStatus })
+        .update({
+            is_watched: false,
+            rating: null,
+            review: null
+        })
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+
+    if (error) {
+        showToast('Failed to reset status', 'error');
+    } else {
+        // Local Update
+        const movie = allMovies.find(m => m.id === id);
+        if (movie) {
+            movie.is_watched = false;
+            movie.rating = null;
+            movie.review = null;
+        }
+        renderMovies();
+        showToast('Movie marked as Unwatched', 'success');
+    }
+}
+
+// Review Form Submit
+reviewForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!currentReviewMovieId) return;
+
+    const rating = parseFloat(document.getElementById('review-rating').value);
+    const review = document.getElementById('review-text').value;
+
+    const { error } = await supabase
+        .from('movies')
+        .update({
+            is_watched: true,
+            rating: rating,
+            review: review
+        })
+        .eq('id', currentReviewMovieId)
+        .eq('user_id', currentUser.id);
+
+    if (error) {
+        showToast('Failed to save review', 'error');
+    } else {
+        // Local Update
+        const movie = allMovies.find(m => m.id === currentReviewMovieId);
+        if (movie) {
+            movie.is_watched = true;
+            movie.rating = rating;
+            movie.review = review;
+        }
+        reviewModal.close();
+        renderMovies();
+        showToast('Review saved!', 'success');
+    }
+});
+
+function showReviewDisplay(movie) {
+    document.getElementById('display-movie-title').textContent = movie.title;
+    document.getElementById('display-rating').textContent = movie.rating;
+    document.getElementById('display-review-text').textContent = movie.review || "No review text.";
+    reviewDisplayModal.showModal();
+}
+
+// Delete Logic
+function deleteMovie(id, title) {
+    currentDeleteMovieId = id;
+    document.getElementById('delete-movie-title').textContent = title;
+    deleteModal.showModal();
+}
+
+async function performDelete(id) {
+    const { error } = await supabase
+        .from('movies')
+        .delete()
         .eq('id', id)
         .eq('user_id', currentUser.id); // Ensure ownership
 
     if (error) {
-        console.error('Error toggling watched status:', error);
-        showToast('Failed to update status', 'error');
+        console.error('Error deleting movie:', error);
+        showToast('Failed to delete movie', 'error');
     } else {
-        // Update local state to avoid full refetch
-        const movie = allMovies.find(m => m.id === id);
-        if (movie) movie.is_watched = !currentStatus;
+            // Update local state
+        allMovies = allMovies.filter(m => m.id !== id);
         renderMovies();
-        const msg = !currentStatus ? 'Marked as Watched' : 'Marked as Unwatched';
-        showToast(msg, 'success');
+        showToast('Movie deleted', 'success');
     }
 }
 
-async function deleteMovie(id, title) {
-    if (confirm(`Are you sure you want to remove "${title}"?`)) {
-        const { error } = await supabase
-            .from('movies')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', currentUser.id); // Ensure ownership
-
-        if (error) {
-            console.error('Error deleting movie:', error);
-            showToast('Failed to delete movie', 'error');
-        } else {
-             // Update local state
-            allMovies = allMovies.filter(m => m.id !== id);
-            renderMovies();
-            showToast('Movie deleted', 'success');
-        }
-    }
-}
-
+// Add Movie Submit
 movieForm.addEventListener("submit", async function(event) {
     event.preventDefault();
 
@@ -438,7 +590,7 @@ movieForm.addEventListener("submit", async function(event) {
 
     const title = document.getElementById("movie-title").value;
     const year = document.getElementById("movie-year").value;
-    const rating = parseFloat(document.getElementById("movie-rating").value); // Parse float
+    // Rating input removed from Add Form
     const posterFile = document.getElementById("movie-poster-file").files[0];
     const submitBtn = document.getElementById("btn-submit-movie");
 
@@ -472,12 +624,14 @@ movieForm.addEventListener("submit", async function(event) {
         }
 
         // INSERT: Include user_id & uploaded poster_url
+        // Default: is_watched = false, rating = null
         const { data, error } = await supabase
             .from('movies')
             .insert([{
                 title,
                 year,
-                rating,
+                rating: null,
+                is_watched: false,
                 poster_url: posterUrl,
                 user_id: currentUser.id
             }])
