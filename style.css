@@ -496,15 +496,13 @@ a {
 .card-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 50%);
     opacity: 0;
     transition: opacity 0.3s ease;
     display: flex;
-    align-items: flex-end;
-    justify-content: center; /* Center buttons */
-    flex-wrap: wrap; /* Prevent button overflow on narrow screens */
-    padding: 20px;
+    align-items: center; /* Center Vertically for Desktop */
+    justify-content: center; /* Center Horizontally for Desktop */
     gap: 16px;
+    background: rgba(0, 0, 0, 0.7); /* Darken entire poster on hover */
 }
 
 .movie-card:hover .card-overlay {
@@ -512,20 +510,34 @@ a {
 }
 
 .action-btn {
-    width: 44px;
-    height: 44px;
-    min-width: 44px; /* Prevent squashing */
-    min-height: 44px; /* Prevent squashing */
-    flex-shrink: 0; /* Prevent squashing */
-    border-radius: 50%; /* Circular */
-    background: rgba(255, 255, 255, 0.1);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy scale */
+    transform: scale(0.8); /* Start slightly smaller */
+    opacity: 0; /* Fade in buttons */
+}
+
+.movie-card:hover .action-btn {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.action-btn:hover {
+    background: white;
+    color: black;
+    transform: scale(1.15) !important; /* Scale up on direct hover */
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
 }
 
 .action-btn:hover {
@@ -590,7 +602,8 @@ a {
 .rating-badge {
     position: absolute;
     top: 10px;
-    right: 10px;
+    left: 10px; /* Moved to Left */
+    right: auto;
     z-index: 20;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
@@ -873,5 +886,31 @@ dialog[open] {
 
     .custom-dropdown, .dropdown-toggle {
         width: 100%;
+    }
+
+    /* Mobile Interaction Update */
+    .card-overlay {
+        opacity: 1; /* Always visible on mobile */
+        background: linear-gradient(to top, rgba(0,0,0,0.95), transparent 60%); /* Bottom gradient only */
+        align-items: flex-end; /* Align to bottom */
+        justify-content: center;
+        padding-bottom: 20px;
+    }
+
+    .action-btn {
+        width: 36px; /* Smaller icons */
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        transform: scale(1); /* No zoom effect by default */
+        opacity: 1; /* Visible */
+    }
+
+    .movie-card:hover .action-btn {
+        transform: scale(1); /* Disable hover scaling on mobile tap logic */
+    }
+
+    .action-btn:hover {
+        transform: scale(1);
     }
 }
