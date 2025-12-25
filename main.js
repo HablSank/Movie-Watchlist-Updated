@@ -377,6 +377,7 @@ function renderMovies() {
         // NEW CARD STRUCTURE (Icons Only)
         movieCard.innerHTML = `
             <div class="card-poster" style="background-image: url('${posterSrc}')">
+                ${ratingBadge} <!-- Badge moved to image area -->
                 <div class="card-overlay">
                     <button class="action-btn btn-watched ${movie.is_watched ? 'active' : ''}" title="${movie.is_watched ? 'Reset Status' : 'Rate & Review'}">
                         ${movie.is_watched
@@ -393,7 +394,6 @@ function renderMovies() {
             <div class="card-info">
                 <div class="info-top">
                     <h3 title="${movie.title}">${movie.title}</h3>
-                    ${ratingBadge}
                 </div>
                 <div class="info-bottom">
                     <span class="year">${movie.year}</span>

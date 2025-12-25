@@ -584,13 +584,22 @@ a {
 }
 
 .rating-badge {
-    background: rgba(255, 215, 0, 0.1);
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
     padding: 4px 8px;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     font-size: 0.8rem;
     font-weight: 700;
     color: #ffd700; /* Gold */
     border: 1px solid rgba(255, 215, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
 }
 
 .info-bottom {
@@ -616,6 +625,12 @@ dialog.modal {
     max-width: 500px;
     width: 90%;
     overflow: visible;
+}
+
+/* Specific background for glass panel inside modals for readability */
+dialog.modal.glass-panel {
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(15px);
 }
 
 dialog::backdrop {
@@ -819,19 +834,17 @@ dialog[open] {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .controls-bar, .watchlist-content, .navbar {
+    .controls-bar, .watchlist-content {
         padding-left: 20px;
         padding-right: 20px;
     }
 
+    /* Keep Oval shape on mobile but add margins to avoid edge touch */
     .navbar {
-        margin: 0;
-        top: 0;
-        border-radius: 0;
-        border-bottom: 1px solid var(--border-color);
-        border-left: none;
-        border-right: none;
-        border-top: none;
+        margin: 10px 10px; /* Reduced top/side margins for mobile */
+        top: 10px;
+        border-radius: var(--radius-pill);
+        padding: 0 20px; /* Reduced internal padding */
     }
 
     .search-sort-group {
